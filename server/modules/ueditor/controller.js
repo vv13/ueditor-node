@@ -1,7 +1,7 @@
 const path = require('path');
 const config = require('./config');
 
-const { getFileList, uploadFile } = require('./service');
+const { getFileList, uploadFile, catchimageUpload } = require('./service');
 
 exports.getUeditorConfig = async (ctx, next) => {
   const { action } = ctx.query;
@@ -16,32 +16,27 @@ exports.getUeditorConfig = async (ctx, next) => {
 };
 
 exports.postUeditorUpload = async (ctx, next) => {
-  const { request: req } = ctx;
+  const { request } = ctx;
   const ActionType = ctx.query.action;
-  if (
-    ActionType === 'uploadimage' ||
-    ActionType === 'uploadfile' ||
-    ActionType === 'uploadvideo'
-  ) {
-    let file_url = config.prefiox; //默认图片上传地址
-    /*其他上传格式的地址*/
-    if (ActionType === 'uploadimage') {
-      file_url = config.prefix + 'img/';
-    }
-    if (ActionType === 'uploadfile') {
-      file_url = config.prefix + 'file/';
-    }
-    if (ActionType === 'uploadvideo') {
-      file_url = config.prefix + 'video/';
-    }
+  const uplaodTypeSuffix = {
+    uploadimage: 'img/',
+    uploadfile: 'file/',
+    uploadvideo: 'video/'
+  };
+  // 处理上传文件
+  if (uplaodTypeSuffix[ActionType]) {
+    const file_url = config.prefix + uplaodTypeSuffix[ActionType];
     const result = await uploadFile(file_url, ctx.req, {
-      action: req.query.action,
-      pictitle: req.body.pictitle,
+      action: request.query.action,
+      pictitle: request.body.pictitle,
       headers: ctx.headers
     });
     ctx.set('Content-Type', 'text/html');
     ctx.body = result;
+  } else if (ActionType === 'catchimage') {
+    // 处理粘贴网络图片上传
+    const { source } = request.body
+    ctx.body = await catchimageUpload(source)
   }
-  // koaUeditor(path.join(__dirname, 'static')
   next();
 };

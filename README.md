@@ -5,7 +5,7 @@
 - POST action=uploadiamge
 - POST action=uploadfile
 - POST action=uploadvideo
-
+- POST action=cacheimage
 
 TODO：
 - [x] 图片、附件、视屏上传
@@ -81,6 +81,22 @@ static
   ctx.response.redirect('/ueditor/nodejs/config.json');
 ```
 
+#### GET /ueditor/ue?action=listimage&start=0&size=20
+```
+返回格式：
+{
+    "state": "SUCCESS",
+    "list": [{
+        "url": "upload/1.jpg"
+    }, {
+        "url": "upload/2.jpg"
+    }, ],
+    "start": 20,
+    "total": 100
+}
+```
+点击多图上传 -> 在线管理，可选择已上传好的图片。
+
 #### POST /ueditor/ue?action=uploadimage
 ```
 请求体(Form data)：
@@ -109,18 +125,22 @@ static
 ```
 上传附件。
 
-#### GET /ueditor/ue?action=listimage&start=0&size=20
+#### POST /ueditor/ue?action=catchimage
 ```
+请求体：
+  source[] = link1, link2
 返回格式：
-{
-    "state": "SUCCESS",
-    "list": [{
-        "url": "upload/1.jpg"
-    }, {
-        "url": "upload/2.jpg"
-    }, ],
-    "start": 20,
-    "total": 100
-}
+  {
+      "state": "SUCCESS",
+      "list": [{
+          "url": "upload/1.jpg",
+          "source": "http://b.com/2.jpg",
+          "state": "SUCCESS"
+      }, {
+          "url": "upload/2.jpg",
+          "source": "http://b.com/2.jpg",
+          "state": "SUCCESS"
+      }, ]
+  }
 ```
-点击多图上传 -> 在线管理，可选择已上传好的图片。
+粘贴图片上传。

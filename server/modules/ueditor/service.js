@@ -4,6 +4,7 @@ const os = require('os');
 const path = require('path');
 const uuidv1 = require('uuid/v1');
 const cfg = require('./config');
+const downloadUrl = require('./downloadUrl');
 
 function getFileList(target) {
   const list = [];
@@ -78,7 +79,28 @@ function uploadFile(img_url, req, config = {}) {
     });
   }
 }
+
+async function catchimageUpload(source) {
+  const list = [];
+  for (const url of source) {
+    const filename = uuidv1() + path.extname(url);
+    const relativePath = path.join(cfg.prefix, 'catchimage', filename);
+    const target = path.join(cfg.static_url, relativePath);
+    await downloadUrl(url, target);
+    list.push({
+      url: relativePath,
+      source: url,
+      state: 'SUCCESS'
+    });
+  }
+  return {
+    state: 'SUCCESS',
+    list
+  };
+}
+
 module.exports = {
   getFileList,
-  uploadFile
+  uploadFile,
+  catchimageUpload
 };
